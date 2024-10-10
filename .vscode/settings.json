@@ -1,0 +1,10 @@
+{
+    "java.project.sourcePaths": [
+        "src"  // Solo el directorio de código fuente
+    ],
+    "java.project.outputPath": "bin",  // Directorio de salida para los archivos compilados
+    "java.project.referencedLibraries": [
+        "lib/mysql-connector-java-9.0.0.jar",  // Ruta completa hacia el archivo JAR
+        "lib/**/*.jar"  // Esto cubre cualquier otro JAR que añadas en el futuro
+    ]
+}
