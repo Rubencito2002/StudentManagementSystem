@@ -168,31 +168,24 @@ public class MainGUI extends JFrame {
     }
 
     private void showAllEnrollmentsDialog() {
-        // Obtener todas las inscripciones
-        List<Enrollment> enrollments = enrollmentDAO.getAllEnrollments();
+        try{
+            // Obtener todas las inscripciones
+            List<Enrollment> enrollments = enrollmentDAO.getAllEnrollments();
+        
+            // Crear el modelo de la tabla
+            String[] columnNames = {"ID Estudiante", "ID Asignatura"};
+            Object[][] data = new Object[enrollments.size()][2];
+        
+            for (int i = 0; i < enrollments.size(); i++) {
+                Enrollment enrollment = enrollments.get(i);
+                data[i][0] = enrollment.getStudentId();
+                data[i][1] = enrollment.getSubjectId();
+            }
     
-        // Crear el modelo de la tabla
-        String[] columnNames = {"ID Estudiante", "ID Asignatura"};
-        Object[][] data = new Object[enrollments.size()][2];
-    
-        for (int i = 0; i < enrollments.size(); i++) {
-            Enrollment enrollment = enrollments.get(i);
-            data[i][0] = enrollment.getStudentId();
-            data[i][1] = enrollment.getSubjectId();
+            tableModel.setDataVector(data, columnNames);
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Error al obtener inscripciones: " + e.getMessage());
         }
-    
-        // Crear la tabla
-        JTable table = new JTable(data, columnNames);
-        table.setFillsViewportHeight(true);
-        JScrollPane scrollPane = new JScrollPane(table);
-    
-        // Crear el diálogo
-        JDialog dialog = new JDialog(this, "Inscripciones", true);
-        dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-        dialog.add(scrollPane);
-        dialog.setSize(400, 300);
-        dialog.setLocationRelativeTo(this);
-        dialog.setVisible(true);
     }
     
 
@@ -269,7 +262,6 @@ public class MainGUI extends JFrame {
         }
     }
     
-
     // Diálogo para eliminar asignatura
     private void showDeleteSubjectDialog() {
         JTextField idField = new JTextField();
