@@ -1,17 +1,13 @@
 package main.java;
 
-import main.java.dao.StudentDAOImpl;
-import main.java.dao.SubjectDAOImpl;
-import main.java.dao.TeacherDAOImpl;
-import main.java.dao.EnrollmentDAOImpl;
-import main.java.models.Student;
-import main.java.models.Subject;
-import main.java.models.Teacher;
-import main.java.utils.DatabaseConnection;
+import main.java.dao.*;
+import main.java.models.*;
 
 import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.sql.SQLException;
+import java.util.List;
 
 public class MainGUI extends JFrame {
     private final StudentDAOImpl studentDAO;
@@ -19,17 +15,8 @@ public class MainGUI extends JFrame {
     private final TeacherDAOImpl teacherDAO;
     private final EnrollmentDAOImpl enrollmentDAO;
 
-    private final JTextArea outputArea;
-    private final JTextField studentNameField;
-    private final JTextField studentLastNameField;
-    private final JTextField studentAgeField;
-    private final JTextField subjectNameField;
-    private final JTextField subjectCreditsField;
-    private final JTextField teacherNameField;
-    private final JTextField teacherDepartmentField;
-    private final JTextField deleteStudentIdField;
-    private final JTextField deleteSubjectIdField;
-    private final JTextField deleteTeacherIdField;
+    private JTable dataTable;
+    private DefaultTableModel tableModel;
 
     public MainGUI() throws SQLException {
         studentDAO = new StudentDAOImpl();
@@ -39,247 +26,368 @@ public class MainGUI extends JFrame {
 
         // Configuración de la ventana
         setTitle("Sistema de Gestión Académica");
-        setSize(600, 600);
+        setSize(800, 600);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
 
-        // Área de salida
-        outputArea = new JTextArea();
-        outputArea.setEditable(false);
-        add(new JScrollPane(outputArea), BorderLayout.CENTER);
+        // Menú
+        JMenuBar menuBar = new JMenuBar();
+        JMenu studentMenu = new JMenu("Estudiantes");
+        JMenu subjectMenu = new JMenu("Asignaturas");
+        JMenu teacherMenu = new JMenu("Profesores");
+        JMenu enrollmentMenu = new JMenu("Inscripciones");
 
-        // Panel de entrada
-        JPanel inputPanel = new JPanel();
-        inputPanel.setLayout(new GridLayout(0, 2));
+        // Opciones del menú de estudiantes
+        JMenuItem addStudent = new JMenuItem("Añadir Estudiante");
+        addStudent.addActionListener(e -> showAddStudentDialog());
+        studentMenu.add(addStudent);
 
-        // Campos para añadir estudiantes
-        inputPanel.add(new JLabel("Nombre del Estudiante:"));
-        studentNameField = new JTextField();
-        inputPanel.add(studentNameField);
+        JMenuItem deleteStudent = new JMenuItem("Eliminar Estudiante");
+        deleteStudent.addActionListener(e -> showDeleteStudentDialog());
+        studentMenu.add(deleteStudent);
 
-        inputPanel.add(new JLabel("Apellido del Estudiante:"));
-        studentLastNameField = new JTextField();
-        inputPanel.add(studentLastNameField);
+        // Opciones del menú de asignaturas
+        JMenuItem addSubject = new JMenuItem("Añadir Asignatura");
+        addSubject.addActionListener(e -> showAddSubjectDialog());
+        subjectMenu.add(addSubject);
 
-        inputPanel.add(new JLabel("Edad del Estudiante:"));
-        studentAgeField = new JTextField();
-        inputPanel.add(studentAgeField);
+        JMenuItem deleteSubject = new JMenuItem("Eliminar Asignatura");
+        deleteSubject.addActionListener(e -> showDeleteSubjectDialog());
+        subjectMenu.add(deleteSubject);
 
-        // Botón para añadir estudiante
-        JButton addStudentButton = new JButton("Añadir Estudiante");
-        addStudentButton.addActionListener(e -> addStudent());
-        inputPanel.add(addStudentButton);
+        // Opciones del menú de profesores
+        JMenuItem addTeacher = new JMenuItem("Añadir Profesor");
+        addTeacher.addActionListener(e -> showAddTeacherDialog());
+        teacherMenu.add(addTeacher);
 
-        // Botón para eliminar estudiante
-        inputPanel.add(new JLabel("ID del Estudiante a Eliminar:"));
-        deleteStudentIdField = new JTextField();
-        inputPanel.add(deleteStudentIdField);
+        JMenuItem deleteTeacher = new JMenuItem("Eliminar Profesor");
+        deleteTeacher.addActionListener(e -> showDeleteTeacherDialog());
+        teacherMenu.add(deleteTeacher);
 
-        JButton deleteStudentButton = new JButton("Eliminar Estudiante");
-        deleteStudentButton.addActionListener(e -> deleteStudent());
-        inputPanel.add(deleteStudentButton);
+        // Opciones del menú de inscripciones
+        JMenuItem enrollStudent = new JMenuItem("Inscribir Estudiante en Asignatura");
+        enrollStudent.addActionListener(e -> showEnrollStudentDialog());
+        enrollmentMenu.add(enrollStudent);
 
-        // Campos para añadir asignaturas
-        inputPanel.add(new JLabel("Nombre de la Asignatura:"));
-        subjectNameField = new JTextField();
-        inputPanel.add(subjectNameField);
+        JMenuItem unenrollStudent = new JMenuItem("Eliminar Inscripción de Estudiante");
+        unenrollStudent.addActionListener(e -> showUnenrollStudentDialog());
+        enrollmentMenu.add(unenrollStudent);
 
-        inputPanel.add(new JLabel("Créditos:"));
-        subjectCreditsField = new JTextField();
-        inputPanel.add(subjectCreditsField);
+        // Añadir menús a la barra
+        menuBar.add(studentMenu);
+        menuBar.add(subjectMenu);
+        menuBar.add(teacherMenu);
+        menuBar.add(enrollmentMenu);
+        setJMenuBar(menuBar);
 
-        // Botón para añadir asignatura
-        JButton addSubjectButton = new JButton("Añadir Asignatura");
-        addSubjectButton.addActionListener(e -> addSubject());
-        inputPanel.add(addSubjectButton);
-
-        // Botón para eliminar asignatura
-        inputPanel.add(new JLabel("ID de la Asignatura a Eliminar:"));
-        deleteSubjectIdField = new JTextField();
-        inputPanel.add(deleteSubjectIdField);
-
-        JButton deleteSubjectButton = new JButton("Eliminar Asignatura");
-        deleteSubjectButton.addActionListener(e -> deleteSubject());
-        inputPanel.add(deleteSubjectButton);
-
-        // Campos para añadir profesores
-        inputPanel.add(new JLabel("Nombre del Profesor:"));
-        teacherNameField = new JTextField();
-        inputPanel.add(teacherNameField);
-
-        inputPanel.add(new JLabel("Departamento:"));
-        teacherDepartmentField = new JTextField();
-        inputPanel.add(teacherDepartmentField);
-
-        // Botón para añadir profesor
-        JButton addTeacherButton = new JButton("Añadir Profesor");
-        addTeacherButton.addActionListener(e -> addTeacher());
-        inputPanel.add(addTeacherButton);
-
-        // Botón para eliminar profesor
-        inputPanel.add(new JLabel("ID del Profesor a Eliminar:"));
-        deleteTeacherIdField = new JTextField();
-        inputPanel.add(deleteTeacherIdField);
-
-        JButton deleteTeacherButton = new JButton("Eliminar Profesor");
-        deleteTeacherButton.addActionListener(e -> deleteTeacher());
-        inputPanel.add(deleteTeacherButton);
-
-        add(inputPanel, BorderLayout.NORTH);
+        // Configuración de la tabla para mostrar datos
+        tableModel = new DefaultTableModel();
+        dataTable = new JTable(tableModel);
+        add(new JScrollPane(dataTable), BorderLayout.CENTER);
 
         // Panel de botones para mostrar información
-        JPanel showInfoPanel = new JPanel();
-        showInfoPanel.setLayout(new GridLayout(0, 1));
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.setLayout(new GridLayout(4, 1));
 
-        // Botón para ver todos los estudiantes
-        JButton viewStudentsButton = new JButton("Ver Todos los Estudiantes");
-        viewStudentsButton.addActionListener(e -> viewAllStudents());
-        showInfoPanel.add(viewStudentsButton);
+        JButton viewAllStudentsButton = new JButton("Ver Todos los Estudiantes");
+        viewAllStudentsButton.addActionListener(e -> viewAllStudents());
+        buttonPanel.add(viewAllStudentsButton);
 
-        // Botón para ver todas las asignaturas
-        JButton viewSubjectsButton = new JButton("Ver Todas las Asignaturas");
-        viewSubjectsButton.addActionListener(e -> viewAllSubjects());
-        showInfoPanel.add(viewSubjectsButton);
+        JButton viewAllSubjectsButton = new JButton("Ver Todas las Asignaturas");
+        viewAllSubjectsButton.addActionListener(e -> viewAllSubjects());
+        buttonPanel.add(viewAllSubjectsButton);
 
-        // Botón para ver todos los profesores
-        JButton viewTeachersButton = new JButton("Ver Todos los Profesores");
-        viewTeachersButton.addActionListener(e -> viewAllTeachers());
-        showInfoPanel.add(viewTeachersButton);
+        JButton viewAllTeachersButton = new JButton("Ver Todos los Profesores");
+        viewAllTeachersButton.addActionListener(e -> viewAllTeachers());
+        buttonPanel.add(viewAllTeachersButton);
 
-        // Botón para ver todas las inscripciones
-        JButton viewEnrollmentsButton = new JButton("Ver Todas las Inscripciones");
-        viewEnrollmentsButton.addActionListener(e -> viewAllEnrollments());
-        showInfoPanel.add(viewEnrollmentsButton);
+        JButton viewAllEnrollmentsButton = new JButton("Ver Todos las Inscripciones");
+        viewAllEnrollmentsButton.addActionListener(e -> showAllEnrollmentsDialog());
+        buttonPanel.add(viewAllEnrollmentsButton);
 
-        add(showInfoPanel, BorderLayout.SOUTH);
+        add(buttonPanel, BorderLayout.SOUTH);
     }
 
-    // Métodos de funcionalidad
-    private void addStudent() {
-        try {
-            String firstName = studentNameField.getText();
-            String lastName = studentLastNameField.getText();
-            int age = Integer.parseInt(studentAgeField.getText());
-
-            Student student = new Student(0, firstName, lastName, age);
-            studentDAO.addStudent(student);
-            outputArea.append("Estudiante añadido: " + firstName + " " + lastName + "\n");
-        } catch (Exception e) {
-            outputArea.append("Error añadiendo estudiante: " + e.getMessage() + "\n");
-        }
-    }
-
-    private void deleteStudent() {
-        try {
-            int studentId = Integer.parseInt(deleteStudentIdField.getText());
-            studentDAO.deleteStudent(studentId);
-            outputArea.append("Estudiante con ID " + studentId + " eliminado.\n");
-        } catch (Exception e) {
-            outputArea.append("Error eliminando estudiante: " + e.getMessage() + "\n");
-        }
-    }
-
-    private void addSubject() {
-        try {
-            String name = subjectNameField.getText();
-            int credits = Integer.parseInt(subjectCreditsField.getText());
-
-            Subject subject = new Subject(0, name, credits);
-            subjectDAO.addSubject(subject);
-            outputArea.append("Asignatura añadida: " + name + "\n");
-        } catch (SQLException | NumberFormatException e) {
-            outputArea.append("Error añadiendo asignatura: " + e.getMessage() + "\n");
-        }
-    }
-
-    private void deleteSubject() {
-        try {
-            int subjectId = Integer.parseInt(deleteSubjectIdField.getText());
-            subjectDAO.deleteSubject(subjectId);
-            outputArea.append("Asignatura con ID " + subjectId + " eliminada.\n");
-        } catch (SQLException | NumberFormatException e) {
-            outputArea.append("Error eliminando asignatura: " + e.getMessage() + "\n");
-        }
-    }
-
-    private void addTeacher() {
-        try {
-            String name = teacherNameField.getText();
-            String department = teacherDepartmentField.getText();
-
-            Teacher teacher = new Teacher(0, name, department);
-            teacherDAO.addTeacher(teacher);
-            outputArea.append("Profesor añadido: " + name + "\n");
-        } catch (SQLException e) {
-            outputArea.append("Error añadiendo profesor: " + e.getMessage() + "\n");
-        }
-    }
-
-    private void deleteTeacher() {
-        try {
-            int teacherId = Integer.parseInt(deleteTeacherIdField.getText());
-            teacherDAO.deleteTeacher(teacherId);
-            outputArea.append("Profesor con ID " + teacherId + " eliminado.\n");
-        } catch (SQLException | NumberFormatException e) {
-            outputArea.append("Error eliminando profesor: " + e.getMessage() + "\n");
-        }
-    }
-
+    // Métodos para mostrar datos en formato tabla
     private void viewAllStudents() {
         try {
-            StringBuilder students = new StringBuilder();
-            studentDAO.getAllStudents().forEach(st -> 
-                students.append("ID: ").append(st.getId())
-                        .append(", Nombre: ").append(st.getFirstName())
-                        .append(" ").append(st.getLastName())
-                        .append(", Edad: ").append(st.getAge()).append("\n"));
-            outputArea.setText(students.toString());
+            List<Student> students = studentDAO.getAllStudents();
+            String[] columns = {"ID", "Nombre", "Apellido", "Edad"};
+            Object[][] data = new Object[students.size()][4];
+
+            for (int i = 0; i < students.size(); i++) {
+                Student student = students.get(i);
+                data[i][0] = student.getId();
+                data[i][1] = student.getFirstName();
+                data[i][2] = student.getLastName();
+                data[i][3] = student.getAge();
+            }
+
+            tableModel.setDataVector(data, columns);
         } catch (Exception e) {
-            outputArea.append("Error al obtener estudiantes: " + e.getMessage() + "\n");
+            JOptionPane.showMessageDialog(this, "Error al obtener estudiantes: " + e.getMessage());
         }
     }
 
     private void viewAllSubjects() {
         try {
-            StringBuilder subjects = new StringBuilder();
-            subjectDAO.getAllSubjects().forEach(sub -> 
-                subjects.append("ID: ").append(sub.getId())
-                        .append(", Nombre: ").append(sub.getName())
-                        .append(", Créditos: ").append(sub.getCredits()).append("\n"));
-            outputArea.setText(subjects.toString());
-        } catch (Exception e) {
-            outputArea.append("Error al obtener asignaturas: " + e.getMessage() + "\n");
+            List<Subject> subjects = subjectDAO.getAllSubjects();
+            String[] columns = {"ID", "Nombre", "Créditos"};
+            Object[][] data = new Object[subjects.size()][3];
+
+            for (int i = 0; i < subjects.size(); i++) {
+                Subject subject = subjects.get(i);
+                data[i][0] = subject.getId();
+                data[i][1] = subject.getName();
+                data[i][2] = subject.getCredits();
+            }
+
+            tableModel.setDataVector(data, columns);
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this, "Error al obtener asignaturas: " + e.getMessage());
         }
     }
 
     private void viewAllTeachers() {
         try {
-            StringBuilder teachers = new StringBuilder();
-            teacherDAO.getAllTeachers().forEach(teacher -> 
-                teachers.append("ID: ").append(teacher.getId())
-                        .append(", Nombre: ").append(teacher.getName())
-                        .append(", Departamento: ").append(teacher.getDepartment()).append("\n"));
-            outputArea.setText(teachers.toString());
+            List<Teacher> teachers = teacherDAO.getAllTeachers();
+            String[] columns = {"ID", "Nombre", "Departamento"};
+            Object[][] data = new Object[teachers.size()][3];
+
+            for (int i = 0; i < teachers.size(); i++) {
+                Teacher teacher = teachers.get(i);
+                data[i][0] = teacher.getId();
+                data[i][1] = teacher.getName();
+                data[i][2] = teacher.getDepartment();
+            }
+
+            tableModel.setDataVector(data, columns);
         } catch (SQLException e) {
-            outputArea.append("Error al obtener profesores: " + e.getMessage() + "\n");
+            JOptionPane.showMessageDialog(this, "Error al obtener profesores: " + e.getMessage());
         }
     }
 
-    private void viewAllEnrollments() {
-        try {
-            StringBuilder enrollments = new StringBuilder();
-            enrollmentDAO.getAllEnrollments().forEach(enr -> 
-                enrollments.append("Estudiante ID: ").append(enr.getStudentId())
-                           .append(", Asignatura ID: ").append(enr.getSubjectId()).append("\n"));
-            outputArea.setText(enrollments.toString());
-        } catch (Exception e) {
-            outputArea.append("Error al obtener inscripciones: " + e.getMessage() + "\n");
+    private void showAllEnrollmentsDialog() {
+        // Obtener todas las inscripciones
+        List<Enrollment> enrollments = enrollmentDAO.getAllEnrollments();
+    
+        // Crear el modelo de la tabla
+        String[] columnNames = {"ID Estudiante", "ID Asignatura"};
+        Object[][] data = new Object[enrollments.size()][2];
+    
+        for (int i = 0; i < enrollments.size(); i++) {
+            Enrollment enrollment = enrollments.get(i);
+            data[i][0] = enrollment.getStudentId();
+            data[i][1] = enrollment.getSubjectId();
+        }
+    
+        // Crear la tabla
+        JTable table = new JTable(data, columnNames);
+        table.setFillsViewportHeight(true);
+        JScrollPane scrollPane = new JScrollPane(table);
+    
+        // Crear el diálogo
+        JDialog dialog = new JDialog(this, "Inscripciones", true);
+        dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+        dialog.add(scrollPane);
+        dialog.setSize(400, 300);
+        dialog.setLocationRelativeTo(this);
+        dialog.setVisible(true);
+    }
+    
+
+    // Métodos para añadir, eliminar e inscribir estudiantes, asignaturas y profesores (anteriormente implementados)
+    // Diálogo para añadir estudiante
+    private void showAddStudentDialog() {
+        JTextField firstNameField = new JTextField();
+        JTextField lastNameField = new JTextField();
+        JTextField ageField = new JTextField();
+    
+        Object[] message = {
+            "Nombre:", firstNameField,
+            "Apellido:", lastNameField,
+            "Edad:", ageField
+        };
+    
+        int option = JOptionPane.showConfirmDialog(null, message, "Añadir Estudiante", JOptionPane.OK_CANCEL_OPTION);
+        if (option == JOptionPane.OK_OPTION) {
+            try {
+                String firstName = firstNameField.getText();
+                String lastName = lastNameField.getText();
+                int age = Integer.parseInt(ageField.getText());
+                
+                Student student = new Student(0, firstName, lastName, age);
+                studentDAO.addStudent(student);
+                JOptionPane.showMessageDialog(this, "Estudiante añadido correctamente.");
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(this, "Error al añadir estudiante: " + e.getMessage());
+            }
+        }
+    }
+
+    // Diálogo para eliminar estudiante
+    private void showDeleteStudentDialog() {
+        JTextField idField = new JTextField();
+        Object[] message = {"ID del Estudiante:", idField};
+    
+        int option = JOptionPane.showConfirmDialog(null, message, "Eliminar Estudiante", JOptionPane.OK_CANCEL_OPTION);
+        if (option == JOptionPane.OK_OPTION) {
+            try {
+                int studentId = Integer.parseInt(idField.getText());
+                studentDAO.deleteStudent(studentId);
+                JOptionPane.showMessageDialog(this, "Estudiante eliminado correctamente.");
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(this, "Error al eliminar estudiante: " + e.getMessage());
+            }
+        }
+    }
+
+    // Diálogo para añadir asignatura
+    private void showAddSubjectDialog() {
+        JTextField nameField = new JTextField();
+        JTextField creditsField = new JTextField();
+    
+        Object[] message = {
+            "Nombre de la Asignatura:", nameField,
+            "Créditos:", creditsField
+        };
+    
+        int option = JOptionPane.showConfirmDialog(null, message, "Añadir Asignatura", JOptionPane.OK_CANCEL_OPTION);
+        if (option == JOptionPane.OK_OPTION) {
+            try {
+                String name = nameField.getText();
+                int credits = Integer.parseInt(creditsField.getText());
+                
+                Subject subject = new Subject(0, name, credits);
+                subjectDAO.addSubject(subject);
+                JOptionPane.showMessageDialog(this, "Asignatura añadida correctamente.");
+            } catch (SQLException e) {
+                JOptionPane.showMessageDialog(this, "Error al añadir asignatura: " + e.getMessage());
+            } catch (NumberFormatException e) {
+                JOptionPane.showMessageDialog(this, "Por favor, ingrese un número válido de créditos.");
+            }
+        }
+    }
+    
+
+    // Diálogo para eliminar asignatura
+    private void showDeleteSubjectDialog() {
+        JTextField idField = new JTextField();
+        Object[] message = {"ID de la Asignatura:", idField};
+    
+        int option = JOptionPane.showConfirmDialog(null, message, "Eliminar Asignatura", JOptionPane.OK_CANCEL_OPTION);
+        if (option == JOptionPane.OK_OPTION) {
+            try {
+                int subjectId = Integer.parseInt(idField.getText());
+                subjectDAO.deleteSubject(subjectId);
+                JOptionPane.showMessageDialog(this, "Asignatura eliminada correctamente.");
+            } catch (SQLException e) {
+                JOptionPane.showMessageDialog(this, "Error al eliminar asignatura: " + e.getMessage());
+            } catch (NumberFormatException e) {
+                JOptionPane.showMessageDialog(this, "Por favor, ingrese un ID válido.");
+            }
+        }
+    }
+
+    // Diálogo para añadir profesor
+    private void showAddTeacherDialog() {
+        JTextField nameField = new JTextField();
+        JTextField departmentField = new JTextField();
+    
+        Object[] message = {
+            "Nombre:", nameField,
+            "Departamento:", departmentField
+        };
+    
+        int option = JOptionPane.showConfirmDialog(null, message, "Añadir Profesor", JOptionPane.OK_CANCEL_OPTION);
+        if (option == JOptionPane.OK_OPTION) {
+            try {
+                String name = nameField.getText();
+                String department = departmentField.getText();
+                
+                Teacher teacher = new Teacher(0, name, department);
+                teacherDAO.addTeacher(teacher);
+                JOptionPane.showMessageDialog(this, "Profesor añadido correctamente.");
+            } catch (SQLException e) {
+                JOptionPane.showMessageDialog(this, "Error al añadir profesor: " + e.getMessage());
+            }
+        }
+    }
+    
+    // Diálogo para eliminar profesor
+    private void showDeleteTeacherDialog() {
+        JTextField idField = new JTextField();
+        Object[] message = {"ID del Profesor:", idField};
+    
+        int option = JOptionPane.showConfirmDialog(null, message, "Eliminar Profesor", JOptionPane.OK_CANCEL_OPTION);
+        if (option == JOptionPane.OK_OPTION) {
+            try {
+                int teacherId = Integer.parseInt(idField.getText());
+                teacherDAO.deleteTeacher(teacherId);
+                JOptionPane.showMessageDialog(this, "Profesor eliminado correctamente.");
+            } catch (SQLException e) {
+                JOptionPane.showMessageDialog(this, "Error al eliminar profesor: " + e.getMessage());
+            } catch (NumberFormatException e) {
+                JOptionPane.showMessageDialog(this, "Por favor, ingrese un ID válido.");
+            }
+        }
+    }    
+
+    // Diálogo para inscribir estudiante en asignatura
+    private void showEnrollStudentDialog() {
+        JTextField studentIdField = new JTextField();
+        JTextField subjectIdField = new JTextField();
+
+        Object[] message = {
+            "ID del Estudiante:", studentIdField,
+            "ID de la Asignatura:", subjectIdField
+        };
+
+        int option = JOptionPane.showConfirmDialog(null, message, "Inscribir Estudiante en Asignatura", JOptionPane.OK_CANCEL_OPTION);
+        if (option == JOptionPane.OK_OPTION) {
+            try {
+                int studentId = Integer.parseInt(studentIdField.getText());
+                int subjectId = Integer.parseInt(subjectIdField.getText());
+                
+                // Utilizar el EnrollmentDAO para inscribir al estudiante
+                Enrollment enrollment = new Enrollment(studentId, subjectId);
+                enrollmentDAO.addEnrollment(enrollment);  // Aquí llamas al método correcto
+                JOptionPane.showMessageDialog(this, "Estudiante inscrito correctamente.");
+            } catch (SQLException e) {
+                JOptionPane.showMessageDialog(this, "Error al inscribir estudiante: " + e.getMessage());
+            } catch (NumberFormatException e) {
+                JOptionPane.showMessageDialog(this, "Por favor, ingrese números válidos.");
+            }
+        }
+    }
+
+    // Diálogo para eliminar la inscripción de un estudiante
+    private void showUnenrollStudentDialog() {
+        JTextField studentIdField = new JTextField();
+        JTextField subjectIdField = new JTextField();
+
+        Object[] message = {
+            "ID del Estudiante:", studentIdField,
+            "ID de la Asignatura:", subjectIdField
+        };
+
+        int option = JOptionPane.showConfirmDialog(null, message, "Eliminar Inscripción de Estudiante", JOptionPane.OK_CANCEL_OPTION);
+        if (option == JOptionPane.OK_OPTION) {
+            try {
+                int studentId = Integer.parseInt(studentIdField.getText());
+                int subjectId = Integer.parseInt(subjectIdField.getText());
+                
+                // Aquí usamos el DAO correcto para las inscripciones
+                enrollmentDAO.deleteEnrollment(studentId, subjectId);  // Usamos el método deleteEnrollment de EnrollmentDAOImpl
+                JOptionPane.showMessageDialog(this, "Inscripción eliminada correctamente.");
+            } catch (SQLException e) {
+                JOptionPane.showMessageDialog(this, "Error al eliminar inscripción: " + e.getMessage());
+            }
         }
     }
 
     public static void main(String[] args) {
         try {
-            DatabaseConnection.getConnection();
             MainGUI gui = new MainGUI();
             gui.setVisible(true);
         } catch (SQLException e) {
