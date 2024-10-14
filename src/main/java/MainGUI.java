@@ -64,13 +64,13 @@ public class MainGUI extends JFrame {
         addTeacher.addActionListener(e -> showAddTeacherDialog());
         teacherMenu.add(addTeacher);
 
-        JMenuItem assignTeacherToSubject = new JMenuItem("Asignar Profesor a Asignatura");
-        assignTeacherToSubject.addActionListener(e -> showAssignTeacherToSubjectDialog());
-        subjectMenu.add(assignTeacherToSubject);
-
         JMenuItem deleteTeacher = new JMenuItem("Eliminar Profesor");
         deleteTeacher.addActionListener(e -> showDeleteTeacherDialog());
         teacherMenu.add(deleteTeacher);
+
+        JMenuItem assignTeacherToSubject = new JMenuItem("Asignar Profesor a Asignatura");
+        assignTeacherToSubject.addActionListener(e -> showAssignTeacherToSubjectDialog());
+        teacherMenu.add(assignTeacherToSubject);
 
         // Opciones del menú de inscripciones
         JMenuItem enrollStudent = new JMenuItem("Inscribir Estudiante en Asignatura");
