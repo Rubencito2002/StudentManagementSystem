@@ -46,4 +46,24 @@ public class EnrollmentDAOImpl {
         }
         return enrollments;
     }
+
+    public List<Object[]> getAllEnrollmentDetails() {
+        List<Object[]> enrollmentDetailsList = new ArrayList<>();
+        String query = "SELECT e.student_id, s.firstName AS student_name, e.subject_id, sub.name AS subject_name FROM enrollments e JOIN students s ON e.student_id = s.id JOIN subjects sub ON e.subject_id = sub.id";
+        try (Statement stmt = conn.createStatement(); ResultSet rs = stmt.executeQuery(query)) {
+            while (rs.next()) {
+                int studentId = rs.getInt("student_id");
+                String studentName = rs.getString("student_name");
+                int subjectId = rs.getInt("subject_id");
+                String subjectName = rs.getString("subject_name");
+    
+                // Añadir un array de objetos a la lista con los detalles
+                enrollmentDetailsList.add(new Object[] {studentId, studentName, subjectId, subjectName});
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return enrollmentDetailsList;
+    }
+    
 }

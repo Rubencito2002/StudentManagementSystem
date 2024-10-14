@@ -170,18 +170,22 @@ public class MainGUI extends JFrame {
     private void showAllEnrollmentsDialog() {
         try{
             // Obtener todas las inscripciones
-            List<Enrollment> enrollments = enrollmentDAO.getAllEnrollments();
+            List<Object[]> enrollments = enrollmentDAO.getAllEnrollmentDetails();
         
             // Crear el modelo de la tabla
-            String[] columnNames = {"ID Estudiante", "ID Asignatura"};
-            Object[][] data = new Object[enrollments.size()][2];
+            String[] columnNames = {"ID Estudiante", "Nombre Estudiante", "ID Asignatura", "Nombre Asignatura"};
+            Object[][] data = new Object[enrollments.size()][4];
         
+            // Llenar la tabla con los datos obtenidos
             for (int i = 0; i < enrollments.size(); i++) {
-                Enrollment enrollment = enrollments.get(i);
-                data[i][0] = enrollment.getStudentId();
-                data[i][1] = enrollment.getSubjectId();
+                Object[] enrollment = enrollments.get(i);
+                data[i][0] = enrollment[0]; // ID del estudiante
+                data[i][1] = enrollment[1]; // Nombre del estudiante
+                data[i][2] = enrollment[2]; // ID de la asignatura
+                data[i][3] = enrollment[3]; // Nombre de la asignatura
             }
-    
+            
+            // Actualizar el modelo de la tabla
             tableModel.setDataVector(data, columnNames);
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this, "Error al obtener inscripciones: " + e.getMessage());
