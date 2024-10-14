@@ -50,6 +50,10 @@ public class MainGUI extends JFrame {
         deleteStudent.addActionListener(e -> showDeleteStudentDialog());
         studentMenu.add(deleteStudent);
 
+        JMenuItem updateStudent = new JMenuItem("Actualizar Estudiante");
+        updateStudent.addActionListener(e -> showUpdateStudentDialog());
+        studentMenu.add(updateStudent);
+
         // Opciones del menú de asignaturas
         JMenuItem addSubject = new JMenuItem("Añadir Asignatura");
         addSubject.addActionListener(e -> showAddSubjectDialog());
@@ -59,6 +63,10 @@ public class MainGUI extends JFrame {
         deleteSubject.addActionListener(e -> showDeleteSubjectDialog());
         subjectMenu.add(deleteSubject);
 
+        JMenuItem updateSubject = new JMenuItem("Actualizar Asignatura");
+        updateSubject.addActionListener(e -> showUpdateSubjectDialog());
+        subjectMenu.add(updateSubject);
+
         // Opciones del menú de profesores
         JMenuItem addTeacher = new JMenuItem("Añadir Profesor");
         addTeacher.addActionListener(e -> showAddTeacherDialog());
@@ -67,6 +75,10 @@ public class MainGUI extends JFrame {
         JMenuItem deleteTeacher = new JMenuItem("Eliminar Profesor");
         deleteTeacher.addActionListener(e -> showDeleteTeacherDialog());
         teacherMenu.add(deleteTeacher);
+
+        JMenuItem updateTeacher = new JMenuItem("Actualizar Profesor");
+        updateTeacher.addActionListener(e -> showUpdateTeacherDialog());
+        teacherMenu.add(updateTeacher);
 
         JMenuItem assignTeacherToSubject = new JMenuItem("Asignar Profesor a Asignatura");
         assignTeacherToSubject.addActionListener(e -> showAssignTeacherToSubjectDialog());
@@ -80,6 +92,10 @@ public class MainGUI extends JFrame {
         JMenuItem unenrollStudent = new JMenuItem("Eliminar Inscripción de Estudiante");
         unenrollStudent.addActionListener(e -> showUnenrollStudentDialog());
         enrollmentMenu.add(unenrollStudent);
+
+        JMenuItem updateEnrollment = new JMenuItem("Actualizar Inscripción");
+        updateEnrollment.addActionListener(e -> showUpdateEnrollmentDialog());
+        enrollmentMenu.add(updateEnrollment);
 
         // Añadir menús a la barra
         menuBar.add(studentMenu);
@@ -202,8 +218,6 @@ public class MainGUI extends JFrame {
         }
     }
     
-    
-
     // Métodos para añadir, eliminar e inscribir estudiantes, asignaturas y profesores (anteriormente implementados)
     // Diálogo para añadir estudiante
     private void showAddStudentDialog() {
@@ -246,6 +260,39 @@ public class MainGUI extends JFrame {
                 JOptionPane.showMessageDialog(this, "Estudiante eliminado correctamente.");
             } catch (Exception e) {
                 JOptionPane.showMessageDialog(this, "Error al eliminar estudiante: " + e.getMessage());
+            }
+        }
+    }
+
+    // Diálogo para actualizar estudiante
+    private void showUpdateStudentDialog() {
+        JTextField idField = new JTextField();
+        JTextField firstNameField = new JTextField();
+        JTextField lastNameField = new JTextField();
+        JTextField ageField = new JTextField();
+
+        Object[] message = {
+            "ID del Estudiante:", idField,
+            "Nuevo Nombre:", firstNameField,
+            "Nuevo Apellido:", lastNameField,
+            "Nueva Edad:", ageField
+        };
+
+        int option = JOptionPane.showConfirmDialog(null, message, "Actualizar Estudiante", JOptionPane.OK_CANCEL_OPTION);
+        if (option == JOptionPane.OK_OPTION) {
+            try {
+                int id = Integer.parseInt(idField.getText());
+                String firstName = firstNameField.getText();
+                String lastName = lastNameField.getText();
+                int age = Integer.parseInt(ageField.getText());
+
+                Student student = new Student(id, firstName, lastName, age);
+                studentDAO.updateStudent(student); // Asegúrate de tener este método en StudentDAOImpl
+                JOptionPane.showMessageDialog(this, "Estudiante actualizado correctamente.");
+            } catch (NumberFormatException e) {
+                JOptionPane.showMessageDialog(this, "Por favor, ingrese valores válidos.");
+            }catch (Exception e) {
+                JOptionPane.showMessageDialog(this, "Error al actualizar estudiante: " + e.getMessage());
             }
         }
     }
@@ -296,6 +343,36 @@ public class MainGUI extends JFrame {
         }
     }
 
+    // Diálogo para actualizar asignatura
+    private void showUpdateSubjectDialog() {
+        JTextField idField = new JTextField();
+        JTextField nameField = new JTextField();
+        JTextField creditsField = new JTextField();
+
+        Object[] message = {
+            "ID de la Asignatura:", idField,
+            "Nuevo Nombre:", nameField,
+            "Nuevos Créditos:", creditsField
+        };
+
+        int option = JOptionPane.showConfirmDialog(null, message, "Actualizar Asignatura", JOptionPane.OK_CANCEL_OPTION);
+        if (option == JOptionPane.OK_OPTION) {
+            try {
+                int id = Integer.parseInt(idField.getText());
+                String name = nameField.getText();
+                int credits = Integer.parseInt(creditsField.getText());
+
+                Subject subject = new Subject(id, name, credits);
+                subjectDAO.updateSubject(subject); // Asegúrate de tener este método en SubjectDAOImpl
+                JOptionPane.showMessageDialog(this, "Asignatura actualizada correctamente.");
+            } catch (SQLException e) {
+                JOptionPane.showMessageDialog(this, "Error al actualizar asignatura: " + e.getMessage());
+            } catch (NumberFormatException e) {
+                JOptionPane.showMessageDialog(this, "Por favor, ingrese valores válidos.");
+            }
+        }
+    }
+
     // Diálogo para añadir profesor
     private void showAddTeacherDialog() {
         JTextField nameField = new JTextField();
@@ -340,6 +417,36 @@ public class MainGUI extends JFrame {
         }
     }    
 
+    // Diálogo para actualizar profesor
+    private void showUpdateTeacherDialog() {
+        JTextField idField = new JTextField();
+        JTextField nameField = new JTextField();
+        JTextField departmentField = new JTextField();
+
+        Object[] message = {
+            "ID del Profesor:", idField,
+            "Nuevo Nombre:", nameField,
+            "Nuevo Departamento:", departmentField
+        };
+
+        int option = JOptionPane.showConfirmDialog(null, message, "Actualizar Profesor", JOptionPane.OK_CANCEL_OPTION);
+        if (option == JOptionPane.OK_OPTION) {
+            try {
+                int id = Integer.parseInt(idField.getText());
+                String name = nameField.getText();
+                String department = departmentField.getText();
+
+                Teacher teacher = new Teacher(id, name, department);
+                teacherDAO.updateTeacher(teacher); // Asegúrate de tener este método en TeacherDAOImpl
+                JOptionPane.showMessageDialog(this, "Profesor actualizado correctamente.");
+            } catch (SQLException e) {
+                JOptionPane.showMessageDialog(this, "Error al actualizar profesor: " + e.getMessage());
+            } catch (NumberFormatException e) {
+                JOptionPane.showMessageDialog(this, "Por favor, ingrese valores válidos.");
+            }
+        }
+    }
+
     // Diálogo para asignar profesor a asignatura
     private void showAssignTeacherToSubjectDialog() {
         JTextField subjectIdField = new JTextField();
@@ -366,8 +473,7 @@ public class MainGUI extends JFrame {
             }
         }
     }
-    
-    
+
     // Diálogo para inscribir estudiante en asignatura
     private void showEnrollStudentDialog() {
         JTextField studentIdField = new JTextField();
@@ -417,6 +523,34 @@ public class MainGUI extends JFrame {
                 JOptionPane.showMessageDialog(this, "Inscripción eliminada correctamente.");
             } catch (SQLException e) {
                 JOptionPane.showMessageDialog(this, "Error al eliminar inscripción: " + e.getMessage());
+            }
+        }
+    }
+
+    // Diálogo para actualizar inscripción
+    private void showUpdateEnrollmentDialog() {
+        JTextField studentIdField = new JTextField();
+        JTextField subjectIdField = new JTextField();
+
+        Object[] message = {
+            "ID del Estudiante:", studentIdField,
+            "Nuevo ID de la Asignatura:", subjectIdField
+        };
+
+        int option = JOptionPane.showConfirmDialog(null, message, "Actualizar Inscripción", JOptionPane.OK_CANCEL_OPTION);
+        if (option == JOptionPane.OK_OPTION) {
+            try {
+                int studentId = Integer.parseInt(studentIdField.getText());
+                int subjectId = Integer.parseInt(subjectIdField.getText());
+
+                // Utiliza el EnrollmentDAO para actualizar la inscripción
+                Enrollment enrollment = new Enrollment(studentId, subjectId);
+                enrollmentDAO.updateEnrollment(enrollment); // Asegúrate de tener este método en EnrollmentDAOImpl
+                JOptionPane.showMessageDialog(this, "Inscripción actualizada correctamente.");
+            } catch (SQLException e) {
+                JOptionPane.showMessageDialog(this, "Error al actualizar inscripción: " + e.getMessage());
+            } catch (NumberFormatException e) {
+                JOptionPane.showMessageDialog(this, "Por favor, ingrese números válidos.");
             }
         }
     }

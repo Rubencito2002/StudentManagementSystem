@@ -70,5 +70,13 @@ public class EnrollmentDAOImpl {
         return enrollmentDetailsList;
     }
     
+    public void updateEnrollment(Enrollment enrollment) throws SQLException {
+        String query = "UPDATE enrollments SET subject_id = ? WHERE student_id = ?";
+        try (Connection connection = DatabaseConnection.getConnection(); PreparedStatement statement = connection.prepareStatement(query)) {
+            statement.setInt(1, enrollment.getSubjectId());
+            statement.setInt(2, enrollment.getStudentId());
+            statement.executeUpdate();
+        }
+    }
     
 }
