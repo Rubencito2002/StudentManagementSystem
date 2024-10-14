@@ -40,6 +40,7 @@ public class MainGUI extends JFrame {
         JMenu subjectMenu = new JMenu("Asignaturas");
         JMenu teacherMenu = new JMenu("Profesores");
         JMenu enrollmentMenu = new JMenu("Inscripciones");
+        JMenu listMenu = new JMenu("Listar Datos");
 
         // Opciones del menú de estudiantes
         JMenuItem addStudent = new JMenuItem("Añadir Estudiante");
@@ -97,39 +98,40 @@ public class MainGUI extends JFrame {
         updateEnrollment.addActionListener(e -> showUpdateEnrollmentDialog());
         enrollmentMenu.add(updateEnrollment);
 
+        // Opciones del menú de listados de datos.
+        JMenuItem viewAllStudentsButton = new JMenuItem("Ver Todos los Estudiantes");
+        viewAllStudentsButton.addActionListener(e -> viewAllStudents());
+        listMenu.add(viewAllStudentsButton);
+
+        JMenuItem viewAllSubjectsButton = new JMenuItem("Ver Todas las Asignaturas");
+        viewAllSubjectsButton.addActionListener(e -> viewAllSubjects());
+        listMenu.add(viewAllSubjectsButton);
+
+        JMenuItem viewAllTeachersButton = new JMenuItem("Ver Todos los Profesores");
+        viewAllTeachersButton.addActionListener(e -> viewAllTeachers());
+        listMenu.add(viewAllTeachersButton);
+
+        JMenuItem viewAllEnrollmentsButton = new JMenuItem("Ver Todos las Inscripciones");
+        viewAllEnrollmentsButton.addActionListener(e -> showAllEnrollmentsDialog());
+        listMenu.add(viewAllEnrollmentsButton);
+
+        // Botón para ver todos los datos (estudiantes, asignaturas, profesores e inscripciones)
+        JMenuItem viewAllDataButton = new JMenuItem("Ver Todos los Datos");
+        viewAllDataButton.addActionListener(e -> viewAllData());
+        listMenu.add(viewAllDataButton);
+
         // Añadir menús a la barra
         menuBar.add(studentMenu);
         menuBar.add(subjectMenu);
         menuBar.add(teacherMenu);
         menuBar.add(enrollmentMenu);
+        menuBar.add(listMenu);
         setJMenuBar(menuBar);
 
         // Configuración de la tabla para mostrar datos
         tableModel = new DefaultTableModel();
         dataTable = new JTable(tableModel);
         add(new JScrollPane(dataTable), BorderLayout.CENTER);
-
-        // Panel de botones para mostrar información
-        JPanel buttonPanel = new JPanel();
-        buttonPanel.setLayout(new GridLayout(4, 1));
-
-        JButton viewAllStudentsButton = new JButton("Ver Todos los Estudiantes");
-        viewAllStudentsButton.addActionListener(e -> viewAllStudents());
-        buttonPanel.add(viewAllStudentsButton);
-
-        JButton viewAllSubjectsButton = new JButton("Ver Todas las Asignaturas");
-        viewAllSubjectsButton.addActionListener(e -> viewAllSubjects());
-        buttonPanel.add(viewAllSubjectsButton);
-
-        JButton viewAllTeachersButton = new JButton("Ver Todos los Profesores");
-        viewAllTeachersButton.addActionListener(e -> viewAllTeachers());
-        buttonPanel.add(viewAllTeachersButton);
-
-        JButton viewAllEnrollmentsButton = new JButton("Ver Todos las Inscripciones");
-        viewAllEnrollmentsButton.addActionListener(e -> showAllEnrollmentsDialog());
-        buttonPanel.add(viewAllEnrollmentsButton);
-
-        add(buttonPanel, BorderLayout.SOUTH);
     }
 
     // Métodos para mostrar datos en formato tabla
@@ -217,7 +219,62 @@ public class MainGUI extends JFrame {
             JOptionPane.showMessageDialog(this, "Error al obtener inscripciones: " + e.getMessage());
         }
     }
+
+    private void viewAllData() {
+        try {
+            List<Student> students = studentDAO.getAllStudents();
+            List<Subject> subjects = subjectDAO.getAllSubjects();
+            List<Teacher> teachers = teacherDAO.getAllTeachers();
+            List<Object[]> enrollments = enrollmentDAO.getAllEnrollmentDetails(); // Detalles de inscripciones
     
+            // Crear un JTabbedPane para mostrar varias tablas en pestañas
+            JTabbedPane tabbedPane = new JTabbedPane();
+    
+            // Tab para Estudiantes
+            DefaultTableModel studentModel = new DefaultTableModel(new String[]{"ID", "Nombre", "Apellido", "Edad"}, 0);
+            for (Student student : students) {
+                studentModel.addRow(new Object[]{student.getId(), student.getFirstName(), student.getLastName(), student.getAge()});
+            }
+            JTable studentTable = new JTable(studentModel);
+            tabbedPane.addTab("Estudiantes", new JScrollPane(studentTable));
+    
+            // Tab para Asignaturas
+            DefaultTableModel subjectModel = new DefaultTableModel(new String[]{"ID", "Nombre", "Créditos"}, 0);
+            for (Subject subject : subjects) {
+                subjectModel.addRow(new Object[]{subject.getId(), subject.getName(), subject.getCredits()});
+            }
+            JTable subjectTable = new JTable(subjectModel);
+            tabbedPane.addTab("Asignaturas", new JScrollPane(subjectTable));
+    
+            // Tab para Profesores
+            DefaultTableModel teacherModel = new DefaultTableModel(new String[]{"ID", "Nombre", "Departamento"}, 0);
+            for (Teacher teacher : teachers) {
+                teacherModel.addRow(new Object[]{teacher.getId(), teacher.getName(), teacher.getDepartment()});
+            }
+            JTable teacherTable = new JTable(teacherModel);
+            tabbedPane.addTab("Profesores", new JScrollPane(teacherTable));
+    
+            // Tab para Inscripciones
+            DefaultTableModel enrollmentModel = new DefaultTableModel(new String[]{"ID Estudiante", "Nombre Estudiante", "ID Asignatura", "Nombre Asignatura", "Nombre Profesor"}, 0);
+            for (Object[] enrollment : enrollments) {
+                enrollmentModel.addRow(new Object[]{enrollment[0], enrollment[1], enrollment[2], enrollment[3], enrollment[4]});
+            }
+            JTable enrollmentTable = new JTable(enrollmentModel);
+            tabbedPane.addTab("Inscripciones", new JScrollPane(enrollmentTable));
+    
+            // Crear y configurar el diálogo
+            JDialog dialog = new JDialog(this, "Datos de Estudiantes, Asignaturas, Profesores e Inscripciones", true);
+            dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+            dialog.add(tabbedPane);
+            dialog.setSize(600, 400);
+            dialog.setLocationRelativeTo(this);
+            dialog.setVisible(true);
+    
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Error al obtener datos: " + e.getMessage());
+        }
+    }    
+
     // Métodos para añadir, eliminar e inscribir estudiantes, asignaturas y profesores (anteriormente implementados)
     // Diálogo para añadir estudiante
     private void showAddStudentDialog() {
