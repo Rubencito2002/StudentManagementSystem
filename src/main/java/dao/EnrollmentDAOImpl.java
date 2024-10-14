@@ -49,21 +49,26 @@ public class EnrollmentDAOImpl {
 
     public List<Object[]> getAllEnrollmentDetails() {
         List<Object[]> enrollmentDetailsList = new ArrayList<>();
-        String query = "SELECT e.student_id, s.firstName AS student_name, e.subject_id, sub.name AS subject_name FROM enrollments e JOIN students s ON e.student_id = s.id JOIN subjects sub ON e.subject_id = sub.id";
+        String query = "SELECT e.student_id, s.firstName AS student_name, e.subject_id, sub.name AS subject_name, t.name AS teacher_name " +
+                       "FROM enrollments e " +
+                       "JOIN students s ON e.student_id = s.id " +
+                       "JOIN subjects sub ON e.subject_id = sub.id " +
+                       "LEFT JOIN teachers t ON sub.teacher_id = t.id";  // Asegúrate de que hay profesores asignados
         try (Statement stmt = conn.createStatement(); ResultSet rs = stmt.executeQuery(query)) {
             while (rs.next()) {
                 int studentId = rs.getInt("student_id");
                 String studentName = rs.getString("student_name");
                 int subjectId = rs.getInt("subject_id");
                 String subjectName = rs.getString("subject_name");
+                String teacherName = rs.getString("teacher_name");
     
-                // Añadir un array de objetos a la lista con los detalles
-                enrollmentDetailsList.add(new Object[] {studentId, studentName, subjectId, subjectName});
+                enrollmentDetailsList.add(new Object[] {studentId, studentName, subjectId, subjectName, teacherName});
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
         return enrollmentDetailsList;
     }
+    
     
 }

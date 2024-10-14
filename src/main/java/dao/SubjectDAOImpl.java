@@ -64,4 +64,19 @@ public class SubjectDAOImpl {
         pstmt.setInt(1, id);
         pstmt.executeUpdate();
     }
+
+    public void assignTeacherToSubject(int subjectId, int teacherId) throws SQLException {
+        String query = "UPDATE subjects SET teacher_id = ? WHERE id = ?";
+        try (PreparedStatement pstmt = conn.prepareStatement(query)) {
+            pstmt.setInt(1, teacherId);
+            pstmt.setInt(2, subjectId);
+            int affectedRows = pstmt.executeUpdate();
+            
+            if (affectedRows == 0) {
+                throw new SQLException("Asignatura no encontrada o no se pudo asignar el profesor.");
+            }
+        }
+    }
+    
+    
 }

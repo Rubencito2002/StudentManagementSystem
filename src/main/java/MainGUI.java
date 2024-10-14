@@ -2,6 +2,7 @@ package main.java;
 
 import main.java.dao.*;
 import main.java.models.*;
+// import main.java.utils.DatabaseConnection;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -19,6 +20,9 @@ public class MainGUI extends JFrame {
     private DefaultTableModel tableModel;
 
     public MainGUI() throws SQLException {
+        // Asegurarse de que la columna teacher_id esté presente en la tabla subjects
+        // DatabaseConnection.addTeacherIdColumn();
+
         studentDAO = new StudentDAOImpl();
         subjectDAO = new SubjectDAOImpl();
         teacherDAO = new TeacherDAOImpl();
@@ -59,6 +63,10 @@ public class MainGUI extends JFrame {
         JMenuItem addTeacher = new JMenuItem("Añadir Profesor");
         addTeacher.addActionListener(e -> showAddTeacherDialog());
         teacherMenu.add(addTeacher);
+
+        JMenuItem assignTeacherToSubject = new JMenuItem("Asignar Profesor a Asignatura");
+        assignTeacherToSubject.addActionListener(e -> showAssignTeacherToSubjectDialog());
+        subjectMenu.add(assignTeacherToSubject);
 
         JMenuItem deleteTeacher = new JMenuItem("Eliminar Profesor");
         deleteTeacher.addActionListener(e -> showDeleteTeacherDialog());
@@ -168,14 +176,14 @@ public class MainGUI extends JFrame {
     }
 
     private void showAllEnrollmentsDialog() {
-        try{
-            // Obtener todas las inscripciones
+        try {
+            // Obtener los detalles de todas las inscripciones
             List<Object[]> enrollments = enrollmentDAO.getAllEnrollmentDetails();
-        
-            // Crear el modelo de la tabla
-            String[] columnNames = {"ID Estudiante", "Nombre Estudiante", "ID Asignatura", "Nombre Asignatura"};
-            Object[][] data = new Object[enrollments.size()][4];
-        
+    
+            // Crear el modelo de la tabla con las columnas correctas
+            String[] columnNames = {"ID Estudiante", "Nombre Estudiante", "ID Asignatura", "Nombre Asignatura", "Profesor"};
+            Object[][] data = new Object[enrollments.size()][5];
+    
             // Llenar la tabla con los datos obtenidos
             for (int i = 0; i < enrollments.size(); i++) {
                 Object[] enrollment = enrollments.get(i);
@@ -183,14 +191,17 @@ public class MainGUI extends JFrame {
                 data[i][1] = enrollment[1]; // Nombre del estudiante
                 data[i][2] = enrollment[2]; // ID de la asignatura
                 data[i][3] = enrollment[3]; // Nombre de la asignatura
+                data[i][4] = enrollment[4]; // Nombre del profesor
             }
-            
+    
             // Actualizar el modelo de la tabla
             tableModel.setDataVector(data, columnNames);
+    
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this, "Error al obtener inscripciones: " + e.getMessage());
         }
     }
+    
     
 
     // Métodos para añadir, eliminar e inscribir estudiantes, asignaturas y profesores (anteriormente implementados)
@@ -329,6 +340,34 @@ public class MainGUI extends JFrame {
         }
     }    
 
+    // Diálogo para asignar profesor a asignatura
+    private void showAssignTeacherToSubjectDialog() {
+        JTextField subjectIdField = new JTextField();
+        JTextField teacherIdField = new JTextField();
+    
+        Object[] message = {
+            "ID de la Asignatura:", subjectIdField,
+            "ID del Profesor:", teacherIdField
+        };
+    
+        int option = JOptionPane.showConfirmDialog(null, message, "Asignar Profesor a Asignatura", JOptionPane.OK_CANCEL_OPTION);
+        if (option == JOptionPane.OK_OPTION) {
+            try {
+                int subjectId = Integer.parseInt(subjectIdField.getText());
+                int teacherId = Integer.parseInt(teacherIdField.getText());
+    
+                // Llamar al DAO para asignar el profesor a la asignatura
+                subjectDAO.assignTeacherToSubject(subjectId, teacherId);
+                JOptionPane.showMessageDialog(this, "Profesor asignado correctamente.");
+            } catch (SQLException e) {
+                JOptionPane.showMessageDialog(this, "Error al asignar profesor: " + e.getMessage());
+            } catch (NumberFormatException e) {
+                JOptionPane.showMessageDialog(this, "IDs inválidos: " + e.getMessage());
+            }
+        }
+    }
+    
+    
     // Diálogo para inscribir estudiante en asignatura
     private void showEnrollStudentDialog() {
         JTextField studentIdField = new JTextField();
